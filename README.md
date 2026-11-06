@@ -6,7 +6,7 @@ AI agent (Claude Code, or any MCP client) can drive the game for you: run comman
 server features, inspect players and entities, take screenshots, read logs, create and load worlds.
 If WorldEdit is installed on the server, its commands are usable through `run_command` too (optional).
 
-> Status: early foundation (0.1.0).
+> Status: early foundation (0.0.1).
 
 ## Features
 
