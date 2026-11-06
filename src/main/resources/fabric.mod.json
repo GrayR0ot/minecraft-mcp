@@ -1,0 +1,36 @@
+{
+	"schemaVersion": 1,
+	"id": "minecraft_mcp",
+	"version": "${version}",
+	"name": "Minecraft MCP",
+	"description": "Embeds a Model Context Protocol (MCP) server in the Minecraft client so an AI agent can assist server developers: run commands, build and test, inspect the game, take screenshots, read logs.",
+	"authors": [
+		"grayr0ot"
+	],
+	"contact": {
+		"sources": "https://github.com/grayr0ot/minecraft-mcp"
+	},
+	"license": "Unlicense",
+	"icon": "assets/minecraft_mcp/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.minecraftmcp.core.McpMod"
+		],
+		"client": [
+			"com.minecraftmcp.client.McpClient"
+		]
+	},
+	"mixins": [
+		{
+			"config": "minecraft_mcp.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

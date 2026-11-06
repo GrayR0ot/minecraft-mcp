@@ -1,0 +1,4 @@
+{
+	"commands.minecraft_mcp.status.running": "MCP server listening on %s (%s tools)",
+	"commands.minecraft_mcp.status.stopped": "MCP server is not running (see config/minecraft_mcp.json and the logs)"
+}
