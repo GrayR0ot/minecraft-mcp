@@ -42,8 +42,8 @@ public final class ScreenshotService {
 	}
 
 	/**
-	 * Takes a screenshot, downscaled by the smallest integer factor that makes it fit
-	 * {@code maxWidth}.
+	 * Takes a screenshot, scaled down (aspect ratio kept) so that it is at most
+	 * {@code maxWidth} pixels wide.
 	 */
 	public Capture capture(int maxWidth) {
 		CompletableFuture<RawFrame> frame = new CompletableFuture<>();
@@ -52,8 +52,9 @@ public final class ScreenshotService {
 				RenderTarget target = minecraft.gameRenderer.mainRenderTarget();
 				int sourceWidth = target.width;
 				int sourceHeight = target.height;
-				int factor = Math.max(1, (int) Math.ceil(sourceWidth / (double) maxWidth));
-				Screenshot.takeScreenshot(target, factor, image -> {
+				// Always read back at full size: vanilla's own downscaling throws when the size is not divisible by the
+				// factor (e.g. 2560 px wide with factor 3). We resize ourselves afterwards.
+				Screenshot.takeScreenshot(target, 1, image -> {
 					try (image) {
 						frame.complete(new RawFrame(image.getPixels(), image.getWidth(), image.getHeight(), sourceWidth, sourceHeight));
 					} catch (RuntimeException e) {
@@ -68,12 +69,31 @@ public final class ScreenshotService {
 		if (raw.width() <= 0 || raw.height() <= 0) {
 			throw new GameStateException("Empty framebuffer (window minimized?).");
 		}
-		return new Capture(encodePng(raw), raw.width(), raw.height(), raw.sourceWidth(), raw.sourceHeight());
-	}
-
-	private static byte[] encodePng(RawFrame raw) {
 		BufferedImage image = new BufferedImage(raw.width(), raw.height(), BufferedImage.TYPE_INT_RGB);
 		image.setRGB(0, 0, raw.width(), raw.height(), raw.argb(), 0, raw.width());
+		image = fitWidth(image, maxWidth);
+		return new Capture(encodePng(image), image.getWidth(), image.getHeight(), raw.sourceWidth(), raw.sourceHeight());
+	}
+
+	/** Scales the image down (area averaging, aspect ratio kept) so it is at most {@code maxWidth} wide. */
+	private static BufferedImage fitWidth(BufferedImage image, int maxWidth) {
+		if (image.getWidth() <= maxWidth) {
+			return image;
+		}
+		int width = maxWidth;
+		int height = Math.max(1, Math.round(image.getHeight() * (maxWidth / (float) image.getWidth())));
+		java.awt.Image scaled = image.getScaledInstance(width, height, java.awt.Image.SCALE_AREA_AVERAGING);
+		BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		java.awt.Graphics2D graphics = result.createGraphics();
+		try {
+			graphics.drawImage(scaled, 0, 0, null);
+		} finally {
+			graphics.dispose();
+		}
+		return result;
+	}
+
+	private static byte[] encodePng(BufferedImage image) {
 		try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 			ImageIO.write(image, "png", out);
 			return out.toByteArray();

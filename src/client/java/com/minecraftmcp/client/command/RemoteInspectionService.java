@@ -3,7 +3,10 @@ package com.minecraftmcp.client.command;
 import com.minecraftmcp.client.ClientAccess;
 import com.minecraftmcp.game.GameStateException;
 import com.minecraftmcp.game.inspect.RemoteInspector;
+import com.minecraftmcp.game.inspect.Snapshots.EntityDetails;
+import com.minecraftmcp.game.inspect.Snapshots.EntitySummary;
 import com.minecraftmcp.game.inspect.Snapshots.ItemDetails;
+import com.minecraftmcp.game.inspect.Snapshots.Vec;
 import com.minecraftmcp.game.inspect.Snapshots.PlayerInfo;
 import com.minecraftmcp.game.inspect.Snapshots.ServerInfo;
 import com.minecraftmcp.game.inspect.WorldInspectionService;
@@ -12,6 +15,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -62,6 +71,41 @@ public final class RemoteInspectionService implements RemoteInspector {
 		return client.call(minecraft -> {
 			LocalPlayer player = requireLocalPlayer(minecraft, playerName);
 			return WorldInspectionService.describeItem(player, slot, minecraft.level.registryAccess());
+		});
+	}
+
+	@Override
+	public List<EntitySummary> entitiesAround(Optional<Vec> center, Optional<String> player, int radius,
+											   Optional<String> type, int limit) {
+		return client.call(minecraft -> {
+			LocalPlayer local = requireLocalPlayer(minecraft, player);
+			Vec3 origin = center.map(v -> new Vec3(v.x(), v.y(), v.z())).orElse(local.position());
+			double maxDistanceSqr = (double) radius * radius;
+			List<EntitySummary> result = new ArrayList<>();
+			for (Entity entity : minecraft.level.entitiesForRendering()) {
+				if (entity instanceof EnderDragonPart
+						|| entity.position().distanceToSqr(origin) > maxDistanceSqr
+						|| type.isPresent() && !type.get().equals(WorldInspectionService.typeId(entity))) {
+					continue;
+				}
+				result.add(WorldInspectionService.summarize(entity, origin));
+			}
+			result.sort(Comparator.comparingDouble(summary -> summary.distance() == null ? 0 : summary.distance()));
+			return result.stream().limit(limit).toList();
+		});
+	}
+
+	@Override
+	public EntityDetails entity(String idOrUuid) {
+		return client.call(minecraft -> {
+			requireConnection(minecraft);
+			String value = idOrUuid.strip();
+			for (Entity entity : minecraft.level.entitiesForRendering()) {
+				if (value.equals(Integer.toString(entity.getId())) || value.equalsIgnoreCase(entity.getUUID().toString())) {
+					return WorldInspectionService.describeEntity(entity);
+				}
+			}
+			throw new GameStateException("No loaded entity with id/uuid '" + idOrUuid + "' (on a remote server only entities near you are loaded).");
 		});
 	}
 

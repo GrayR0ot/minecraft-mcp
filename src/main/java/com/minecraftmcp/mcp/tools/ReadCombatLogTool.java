@@ -1,6 +1,8 @@
 package com.minecraftmcp.mcp.tools;
 
 import com.minecraftmcp.game.combat.CombatLog;
+import com.minecraftmcp.game.GameStateException;
+import com.minecraftmcp.game.ServerAccess;
 import com.minecraftmcp.mcp.tool.McpTool;
 import com.minecraftmcp.mcp.tool.Schema;
 import com.minecraftmcp.mcp.tool.ToolArgs;
@@ -26,9 +28,11 @@ public final class ReadCombatLogTool implements McpTool {
 			true, false);
 
 	private final CombatLog combat;
+	private final ServerAccess serverAccess;
 
-	public ReadCombatLogTool(CombatLog combat) {
+	public ReadCombatLogTool(CombatLog combat, ServerAccess serverAccess) {
 		this.combat = combat;
+		this.serverAccess = serverAccess;
 	}
 
 	@Override
@@ -38,6 +42,11 @@ public final class ReadCombatLogTool implements McpTool {
 
 	@Override
 	public ToolResult call(ToolArgs args) {
+		if (serverAccess.current().isEmpty()) {
+			throw new GameStateException("Damage events are recorded by the server this game runs: not available on a remote "
+					+ "server (or when no world is loaded). Use run_command on the remote server, e.g. a damage log plugin, "
+					+ "or read_logs.");
+		}
 		return ToolResult.json(combat.query(
 				args.intOr("after_id", 0, 0, Integer.MAX_VALUE),
 				args.boolOr("players_only", true),

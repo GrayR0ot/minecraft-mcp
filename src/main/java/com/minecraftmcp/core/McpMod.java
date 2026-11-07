@@ -77,7 +77,7 @@ public final class McpMod implements ModInitializer {
 				new InspectEntityTool(inspection),
 				new InspectItemTool(inspection),
 				new ReadLogsTool(logs),
-				new ReadCombatLogTool(combat)));
+				new ReadCombatLogTool(combat, serverAccess)));
 
 		String version = loader.getModContainer(MOD_ID)
 				.map(container -> container.getMetadata().getVersion().getFriendlyString())

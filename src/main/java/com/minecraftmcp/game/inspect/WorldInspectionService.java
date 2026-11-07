@@ -115,6 +115,10 @@ public final class WorldInspectionService {
 		Optional<Vec3> center = requestedCenter.map(v -> new Vec3(v.x(), v.y(), v.z()));
 		int clampedRadius = Math.min(Math.max(radius, 1), MAX_RADIUS);
 		Optional<String> normalizedType = typeFilter.map(WorldInspectionService::normalizeId);
+		RemoteInspector remoteInspector = remoteIfNoServer();
+		if (remoteInspector != null) {
+			return remoteInspector.entitiesAround(requestedCenter, playerName, clampedRadius, normalizedType, limit);
+		}
 		return serverAccess.call(server -> {
 			ServerLevel level;
 			Vec3 origin;
@@ -186,6 +190,10 @@ public final class WorldInspectionService {
 
 	/** Detailed view of an entity found by UUID or numeric network id, in any dimension. */
 	public EntityDetails entity(String idOrUuid) {
+		RemoteInspector remoteInspector = remoteIfNoServer();
+		if (remoteInspector != null) {
+			return remoteInspector.entity(idOrUuid);
+		}
 		return serverAccess.call(server -> {
 			Entity entity = findEntity(server, idOrUuid);
 			if (entity == null) {
@@ -240,7 +248,8 @@ public final class WorldInspectionService {
 				effects(player));
 	}
 
-	private static EntityDetails describeEntity(Entity entity) {
+	/** Details of an entity (server or client side). */
+	public static EntityDetails describeEntity(Entity entity) {
 		List<AttributeInfo> attributes = List.of();
 		List<EffectInfo> effects = List.of();
 		List<ItemInfo> equipment = new ArrayList<>();
@@ -269,7 +278,8 @@ public final class WorldInspectionService {
 				equipment);
 	}
 
-	private static EntitySummary summarize(Entity entity, Vec3 origin) {
+	/** Summary of an entity; {@code origin} (nullable) is used to compute the distance. */
+	public static EntitySummary summarize(Entity entity, Vec3 origin) {
 		Float health = entity instanceof LivingEntity living ? living.getHealth() : null;
 		Float maxHealth = entity instanceof LivingEntity living ? living.getMaxHealth() : null;
 		Double distance = origin == null ? null : Snapshots.round(Math.sqrt(entity.position().distanceToSqr(origin)));
@@ -325,7 +335,7 @@ public final class WorldInspectionService {
 		return BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
 	}
 
-	private static String typeId(Entity entity) {
+	public static String typeId(Entity entity) {
 		return BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString();
 	}
 
@@ -333,7 +343,7 @@ public final class WorldInspectionService {
 		return Vec.of(v.x, v.y, v.z);
 	}
 
-	private static String normalizeId(String id) {
+	public static String normalizeId(String id) {
 		String lower = id.toLowerCase(Locale.ROOT);
 		return lower.contains(":") ? lower : "minecraft:" + lower;
 	}
