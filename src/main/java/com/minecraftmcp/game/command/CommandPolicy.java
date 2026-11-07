@@ -42,7 +42,8 @@ public final class CommandPolicy {
 	 */
 	public String prepare(String rawCommand) {
 		String command = rawCommand == null ? "" : rawCommand.strip();
-		while (command.startsWith("/")) {
+		// Strip exactly one slash, like the game does: "//set" is WorldEdit's "/set" command, not "set".
+		if (command.startsWith("/")) {
 			command = command.substring(1).stripLeading();
 		}
 		if (command.isEmpty()) {

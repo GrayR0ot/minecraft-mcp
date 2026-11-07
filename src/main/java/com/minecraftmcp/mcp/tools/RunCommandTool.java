@@ -19,7 +19,9 @@ public final class RunCommandTool implements McpTool {
 					+ "player so that @s, ~ ~ ~ and ^ ^ ^ refer to them. Examples: 'give @p diamond_sword', "
 					+ "'summon zombie ~ ~ ~5', 'data get entity @p', 'tick freeze'. Some commands (stop, op, "
 					+ "ban...) are blocked by the safety policy. When joined to a remote server, the command is sent through the chat as "
-					+ "your own player (with your permissions): 'success' may then be null, read 'output' and 'note'.",
+					+ "your own player (with your permissions): 'success' may then be null, read 'output' and 'note'. "
+					+ "WorldEdit commands are accepted with their double slash ('//pos1 0,64,0', '//set stone'); the selection "
+					+ "belongs to the player, so set pos1 and pos2 first. Use list_commands (filter=worldedit) for the syntax.",
 			Schema.object()
 					.string("command", "Command, with or without the leading slash. Single line.", true)
 					.string("as_player", "Optional name of an online player to execute as.", false)

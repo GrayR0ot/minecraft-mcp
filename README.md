@@ -4,7 +4,7 @@ A Fabric mod for **Minecraft 26.3** that embeds a [Model Context Protocol](https
 server in the game client, to assist **Minecraft server developers**. Install it on your client, and an
 AI agent (Claude Code, or any MCP client) can drive the game for you: run commands, build, test your
 server features, inspect players and entities, take screenshots, read logs, create and load worlds.
-If WorldEdit is installed on the server, its commands are usable through `run_command` too (optional).
+If WorldEdit is installed on the server, its `//` commands work through `run_command` (e.g. `//pos1 0,64,0`, `//set stone`, `//undo`) and `list_commands` with `filter=worldedit` shows their syntax.
 
 > Status: early foundation (0.0.2).
 

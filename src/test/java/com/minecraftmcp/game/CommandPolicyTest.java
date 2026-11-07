@@ -18,8 +18,15 @@ class CommandPolicyTest {
 	private final CommandPolicy restricted = new CommandPolicy(true, List.of("stop", "op"));
 
 	@Test
-	void stripsLeadingSlashes() {
-		assertEquals("time set day", restricted.prepare("  //time set day "));
+	void stripsOneLeadingSlash() {
+		assertEquals("time set day", restricted.prepare("  /time set day "));
+		assertEquals("time set day", restricted.prepare("time set day"));
+	}
+
+	@Test
+	void keepsSecondSlashForWorldEditCommands() {
+		assertEquals("/set stone", restricted.prepare("//set stone"));
+		assertEquals("/pos1", restricted.prepare("//pos1"));
 	}
 
 	@Test

@@ -29,7 +29,7 @@ Developing a Minecraft server means a lot of repetitive in-game work: running co
 
 Also includes an in-game `/mcp status` command, and a config screen if Mod Menu and Cloth Config are installed (both optional).
 
-**WorldEdit (optional):** if WorldEdit is installed on the server, its commands can be run through `run_command`.
+**WorldEdit (optional):** if WorldEdit is installed on the server, its `//` commands work through `run_command` (`//pos1 0,64,0`, `//set stone`, `//undo`), and `list_commands` shows their syntax.
 
 ## Remote servers
 

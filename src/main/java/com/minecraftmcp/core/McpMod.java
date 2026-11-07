@@ -44,6 +44,7 @@ public final class McpMod implements ModInitializer {
 			- Start with server_status. If no world is loaded and client tools exist, use client_world \
 			(action=list/create/open) to get into a world.
 			- run_command executes any vanilla or modded command and returns its output.
+			- WorldEdit commands work through run_command too (e.g. "//pos1 0,64,0", "//pos2 4,66,4", "//set stone", "//undo"); \n			list_commands with filter=worldedit shows which ones the server offers and their syntax.
 			- get_player, list_entities, inspect_entity and inspect_item (lore, enchantments, components) read the game state.
 			- take_screenshot shows what the player sees; client_state gives screen, crosshair target and chat.
 			- read_logs with after_id lets you follow new log lines (errors, stack traces) between actions.
