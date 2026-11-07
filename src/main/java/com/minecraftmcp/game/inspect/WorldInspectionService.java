@@ -6,12 +6,16 @@ import com.minecraftmcp.game.inspect.Snapshots.AttributeInfo;
 import com.minecraftmcp.game.inspect.Snapshots.EffectInfo;
 import com.minecraftmcp.game.inspect.Snapshots.EntityDetails;
 import com.minecraftmcp.game.inspect.Snapshots.EntitySummary;
+import com.minecraftmcp.game.inspect.Snapshots.ItemDetails;
 import com.minecraftmcp.game.inspect.Snapshots.ItemInfo;
 import com.minecraftmcp.game.inspect.Snapshots.PlayerInfo;
 import com.minecraftmcp.game.inspect.Snapshots.Rotation;
 import com.minecraftmcp.game.inspect.Snapshots.ServerInfo;
 import com.minecraftmcp.game.inspect.Snapshots.Vec;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -21,13 +25,18 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -108,6 +117,35 @@ public final class WorldInspectionService {
 		});
 	}
 
+	/**
+	 * Full description of one stack of a player's inventory: summary, tooltip and every data component.
+	 *
+	 * @param playerName player name (first online player if empty)
+	 * @param slot       inventory slot (0-8 hotbar, 9-35 storage, 36-39 boots..helmet, 40 offhand); the
+	 *                   selected hotbar slot if empty
+	 */
+	public ItemDetails itemDetails(Optional<String> playerName, java.util.OptionalInt slot) {
+		return serverAccess.call(server -> {
+			ServerPlayer player = ServerAccess.resolvePlayer(server, playerName);
+			Inventory inventory = player.getInventory();
+			int index = slot.orElse(inventory.getSelectedSlot());
+			if (index < 0 || index >= inventory.getContainerSize()) {
+				throw new GameStateException("Slot " + index + " is out of range (0-" + (inventory.getContainerSize() - 1) + ").");
+			}
+			ItemStack stack = inventory.getItem(index);
+			if (stack.isEmpty()) {
+				throw new GameStateException("Slot " + index + " of " + player.getName().getString() + " is empty.");
+			}
+			List<String> tooltip = stack.getTooltipLines(Item.TooltipContext.of(player.level()), player, TooltipFlag.ADVANCED)
+					.stream().map(Component::getString).toList();
+			var ops = server.registryAccess().createSerializationContext(JsonOps.INSTANCE);
+			var components = ItemStack.CODEC.encodeStart(ops, stack)
+					.resultOrPartial(error -> { throw new GameStateException("Could not serialize the item: " + error); })
+					.orElseThrow();
+			return new ItemDetails(item(index, stack), tooltip, components);
+		});
+	}
+
 	/** Detailed view of an entity found by UUID or numeric network id, in any dimension. */
 	public EntityDetails entity(String idOrUuid) {
 		return serverAccess.call(server -> {
@@ -178,8 +216,7 @@ public final class WorldInspectionService {
 			for (EquipmentSlot slot : EquipmentSlot.values()) {
 				ItemStack stack = living.getItemBySlot(slot);
 				if (!stack.isEmpty()) {
-					equipment.add(new ItemInfo(slot.ordinal(), itemId(stack) + " (" + slot.getName() + ")", stack.getCount(),
-							stack.getHoverName().getString()));
+					equipment.add(item(slot.ordinal(), stack, slot.getName()));
 				}
 			}
 		}
@@ -217,7 +254,32 @@ public final class WorldInspectionService {
 	}
 
 	private static ItemInfo item(int slot, ItemStack stack) {
-		return new ItemInfo(slot, itemId(stack), stack.getCount(), stack.getHoverName().getString());
+		return item(slot, stack, null);
+	}
+
+	/** Summary of a stack; {@code label} (e.g. an equipment slot name) is appended to the item id if present. */
+	private static ItemInfo item(int slot, ItemStack stack, String label) {
+		ItemLore lore = stack.get(DataComponents.LORE);
+		List<String> loreLines = lore == null || lore.lines().isEmpty()
+				? null : lore.lines().stream().map(Component::getString).toList();
+
+		Map<String, Integer> enchantments = null;
+		if (!stack.getEnchantments().isEmpty()) {
+			enchantments = new LinkedHashMap<>();
+			for (var entry : stack.getEnchantments().entrySet()) {
+				enchantments.put(entry.getKey().getRegisteredName(), entry.getIntValue());
+			}
+		}
+
+		boolean damageable = stack.isDamageableItem();
+		return new ItemInfo(slot,
+				label == null ? itemId(stack) : itemId(stack) + " (" + label + ")",
+				stack.getCount(),
+				stack.getHoverName().getString(),
+				loreLines,
+				enchantments,
+				damageable ? stack.getMaxDamage() - stack.getDamageValue() : null,
+				damageable ? stack.getMaxDamage() : null);
 	}
 
 	private static String itemId(ItemStack stack) {

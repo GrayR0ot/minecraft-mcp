@@ -24,10 +24,22 @@ loom {
 	}
 }
 
+repositories {
+	// Optional client-side config screen (Mod Menu + Cloth Config), fetched from Modrinth.
+	exclusiveContent {
+		forRepository { maven { name = "Modrinth"; url = "https://api.modrinth.com/maven" } }
+		filter { includeGroup "maven.modrinth" }
+	}
+}
+
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+	// Optional: the config screen is only used when both mods are installed (see "suggests" in fabric.mod.json).
+	clientImplementation "maven.modrinth:cloth-config:fg2uyxOW"
+	clientImplementation "maven.modrinth:modmenu:kyy7dbrZ"
 
 	testImplementation platform("org.junit:junit-bom:5.12.2")
 	testImplementation "org.junit.jupiter:junit-jupiter"

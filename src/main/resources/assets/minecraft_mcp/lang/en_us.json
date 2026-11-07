@@ -1,4 +1,32 @@
 {
 	"commands.minecraft_mcp.status.running": "MCP server listening on %s (%s tools)",
-	"commands.minecraft_mcp.status.stopped": "MCP server is not running (see config/minecraft_mcp.json and the logs)"
+	"commands.minecraft_mcp.status.stopped": "MCP server is not running (see config/minecraft_mcp.json and the logs)",
+
+	"config.minecraft_mcp.title": "Minecraft MCP",
+	"config.minecraft_mcp.restart": "Changes are applied the next time the game starts.",
+	"config.minecraft_mcp.category.server": "Server",
+	"config.minecraft_mcp.category.commands": "Commands",
+	"config.minecraft_mcp.category.other": "Logs & Client",
+
+	"config.minecraft_mcp.server.enabled": "Enable MCP server",
+	"config.minecraft_mcp.server.enabled.tooltip": "Turns the MCP endpoint on or off.",
+	"config.minecraft_mcp.server.host": "Bind address",
+	"config.minecraft_mcp.server.host.tooltip": "Keep 127.0.0.1 unless you also set an auth token: the server refuses to start on another address without one.",
+	"config.minecraft_mcp.server.port": "Port",
+	"config.minecraft_mcp.server.authToken": "Auth token",
+	"config.minecraft_mcp.server.authToken.tooltip": "Optional bearer token that clients must send. Stored in plain text. The MCP_TOKEN environment variable overrides it.",
+	"config.minecraft_mcp.server.gameThreadTimeoutMs": "Game thread timeout (ms)",
+	"config.minecraft_mcp.server.gameThreadTimeoutMs.tooltip": "Maximum time a tool waits for the game thread.",
+
+	"config.minecraft_mcp.commands.restricted": "Restrict commands",
+	"config.minecraft_mcp.commands.restricted.tooltip": "When on, run_command refuses the commands listed below, even behind /execute ... run. A guard rail against mistakes, not a sandbox.",
+	"config.minecraft_mcp.commands.denied": "Denied commands",
+	"config.minecraft_mcp.commands.denied.tooltip": "Root command names refused in restricted mode.",
+
+	"config.minecraft_mcp.logs.bufferSize": "Log buffer size",
+	"config.minecraft_mcp.client.disablePauseOnLostFocus": "Keep running in background",
+	"config.minecraft_mcp.client.disablePauseOnLostFocus.tooltip": "Keeps the game running when its window loses focus, so the AI can drive it in the background.",
+	"config.minecraft_mcp.client.screenshotMaxWidth": "Screenshot max width",
+	"config.minecraft_mcp.client.screenshotMaxWidth.tooltip": "Wider screenshots are downscaled to save tokens.",
+	"config.minecraft_mcp.client.chatBufferSize": "Chat buffer size"
 }

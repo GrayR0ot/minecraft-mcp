@@ -1,6 +1,9 @@
 package com.minecraftmcp.game.inspect;
 
+import com.google.gson.JsonElement;
+
 import java.util.List;
+import java.util.Map;
 
 /**
  * Immutable, thread-safe views of game objects, captured on the server thread and serialized to
@@ -21,7 +24,26 @@ public final class Snapshots {
 	public record Rotation(float yaw, float pitch) {
 	}
 
-	public record ItemInfo(int slot, String item, int count, String name) {
+	/**
+	 * Summary of an item stack. Optional fields are omitted from the JSON when absent.
+	 *
+	 * @param lore          lore lines as plain text, or null if none
+	 * @param enchantments  enchantment id to level, or null if none
+	 * @param durability    remaining durability, or null if the item is not damageable
+	 * @param maxDurability maximum durability, or null if the item is not damageable
+	 */
+	public record ItemInfo(int slot, String item, int count, String name, List<String> lore,
+						   Map<String, Integer> enchantments, Integer durability, Integer maxDurability) {
+	}
+
+	/**
+	 * Everything known about one stack.
+	 *
+	 * @param item       summary (name, lore, enchantments, durability)
+	 * @param tooltip    the tooltip lines as the player sees them (advanced tooltips on: ids, durability)
+	 * @param components the whole stack serialized as JSON, with every data component
+	 */
+	public record ItemDetails(ItemInfo item, List<String> tooltip, JsonElement components) {
 	}
 
 	public record EffectInfo(String effect, int amplifier, int durationTicks) {

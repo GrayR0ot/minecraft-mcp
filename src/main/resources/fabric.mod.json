@@ -19,6 +19,9 @@
 		],
 		"client": [
 			"com.minecraftmcp.client.McpClient"
+		],
+		"modmenu": [
+			"com.minecraftmcp.client.config.McpModMenu"
 		]
 	},
 	"mixins": [
@@ -32,5 +35,9 @@
 		"minecraft": "~26.3",
 		"java": ">=25",
 		"fabric-api": "*"
+	},
+	"suggests": {
+		"modmenu": "*",
+		"cloth-config": "*"
 	}
 }

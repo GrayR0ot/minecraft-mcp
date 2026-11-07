@@ -13,6 +13,7 @@ import com.minecraftmcp.mcp.protocol.McpServerInfo;
 import com.minecraftmcp.mcp.tool.ToolRegistry;
 import com.minecraftmcp.mcp.tools.GetPlayerTool;
 import com.minecraftmcp.mcp.tools.InspectEntityTool;
+import com.minecraftmcp.mcp.tools.InspectItemTool;
 import com.minecraftmcp.mcp.tools.ListEntitiesTool;
 import com.minecraftmcp.mcp.tools.ReadCombatLogTool;
 import com.minecraftmcp.mcp.tools.ReadLogsTool;
@@ -43,7 +44,7 @@ public final class McpMod implements ModInitializer {
 			- Start with server_status. If no world is loaded and client tools exist, use client_world \
 			(action=list/create/open) to get into a world.
 			- run_command executes any vanilla or modded command and returns its output.
-			- get_player, list_entities and inspect_entity read the game state.
+			- get_player, list_entities, inspect_entity and inspect_item (lore, enchantments, components) read the game state.
 			- take_screenshot shows what the player sees; client_state gives screen, crosshair target and chat.
 			- read_logs with after_id lets you follow new log lines (errors, stack traces) between actions.
 			World changes happen on the next game tick: re-read state rather than assuming.""";
@@ -73,6 +74,7 @@ public final class McpMod implements ModInitializer {
 				new GetPlayerTool(inspection),
 				new ListEntitiesTool(inspection),
 				new InspectEntityTool(inspection),
+				new InspectItemTool(inspection),
 				new ReadLogsTool(logs),
 				new ReadCombatLogTool(combat)));
 

@@ -31,8 +31,25 @@ public final class ConfigLoader {
 	 * logged and replaced by defaults in memory (the file itself is left untouched for the user).
 	 */
 	public static McpConfig load(Path file, Map<String, String> environment) {
+		boolean[] readOk = {true};
+		McpConfig config = read(file, readOk);
+		if (readOk[0]) {
+			save(file, config);
+		}
+		applyEnvironment(config, environment);
+		return config;
+	}
+
+	/**
+	 * Reads the config file as stored (no environment overrides, nothing written back). Used by the
+	 * in-game config screen so that environment values are never persisted to disk.
+	 */
+	public static McpConfig readFile(Path file) {
+		return read(file, new boolean[1]);
+	}
+
+	private static McpConfig read(Path file, boolean[] readOk) {
 		McpConfig config = new McpConfig();
-		boolean readOk = true;
 		if (Files.exists(file)) {
 			try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
 				McpConfig parsed = GSON.fromJson(reader, McpConfig.class);
@@ -40,20 +57,15 @@ public final class ConfigLoader {
 					config = parsed;
 				}
 			} catch (IOException | JsonParseException e) {
-				readOk = false;
+				readOk[0] = false;
 				LOGGER.error("Could not read {}, using defaults. Fix or delete the file.", file, e);
 			}
 		}
-		config.normalize();
-
-		if (readOk) {
-			save(file, config);
-		}
-		applyEnvironment(config, environment);
-		return config;
+		return config.normalize();
 	}
 
-	private static void save(Path file, McpConfig config) {
+	/** Writes the config to disk, logging (not throwing) on failure. */
+	public static void save(Path file, McpConfig config) {
 		try {
 			Files.createDirectories(file.getParent());
 			try (Writer writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
