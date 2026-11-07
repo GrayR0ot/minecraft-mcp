@@ -6,6 +6,8 @@ import com.minecraftmcp.client.screenshot.ScreenshotService;
 import com.minecraftmcp.client.tools.ClientInputTool;
 import com.minecraftmcp.client.tools.ClientStateTool;
 import com.minecraftmcp.client.tools.ClientWorldTool;
+import com.minecraftmcp.client.tools.ListCommandsTool;
+import com.minecraftmcp.client.command.CommandCatalogService;
 import com.minecraftmcp.client.tools.TakeScreenshotTool;
 import com.minecraftmcp.client.world.WorldSessionService;
 import com.minecraftmcp.core.McpMod;
@@ -43,6 +45,7 @@ public final class McpClient implements ClientModInitializer {
 				new TakeScreenshotTool(new ScreenshotService(client), config.client.screenshotMaxWidth),
 				new ClientStateTool(new ClientStateService(client, chat)),
 				new ClientInputTool(input),
+				new ListCommandsTool(new CommandCatalogService(client)),
 				new ClientWorldTool(new WorldSessionService(client, runtime.serverAccess()))));
 
 		ClientLifecycleEvents.CLIENT_STARTED.register(minecraft -> {

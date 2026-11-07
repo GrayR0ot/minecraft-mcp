@@ -23,6 +23,7 @@ Developing a Minecraft server means a lot of repetitive in-game work: running co
 | `take_screenshot` | PNG of what the player sees |
 | `client_state` | Open screen, crosshair target, received chat |
 | `client_input` | Look, hotbar, use, attack, hold keys, respawn, chat |
+| `list_commands` | Commands the server allows you, with syntax; detects WorldEdit |
 | `client_world` | List, create, open and leave singleplayer worlds |
 
 Also includes an in-game `/mcp status` command, and a config screen if Mod Menu and Cloth Config are installed (both optional).
