@@ -17,6 +17,7 @@ If WorldEdit is installed on the server, its commands are usable through `run_co
 | `get_player` | common | Position, health, food, inventory, effects… |
 | `list_entities` | common | Entities around a player or a point, nearest first |
 | `inspect_entity` | common | Attributes, effects, equipment, motion of one entity |
+| `inspect_item` | common | Full details of one inventory stack: name, lore, enchantments, durability, tooltip, all data components |
 | `read_logs` | common | Game log with a cursor and filters (level, logger, text) |
 | `read_combat_log` | common | Damage and death events: who hit whom, incoming damage vs health actually lost |
 | `take_screenshot` | client | PNG of what the player sees |
@@ -24,7 +25,7 @@ If WorldEdit is installed on the server, its commands are usable through `run_co
 | `client_input` | client | Look, hotbar slot, use, attack, hold a key for N ticks (bow, eating, walking), respawn, close screen, chat |
 | `client_world` | client | List, create, open and leave singleplayer worlds |
 
-Also: an in-game `/mcp status` command.
+Also: an in-game `/mcp status` command, and an in-game config screen (Mod Menu + Cloth Config, both optional).
 
 ## Requirements
 

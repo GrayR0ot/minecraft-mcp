@@ -56,7 +56,7 @@ jobs:
           changelog: ${{ github.event.release.body }}
           version-type: release
           loaders: fabric
-          game-versions: 26.3
+          game-versions: 26.3M
           java: 25
           dependencies: |
             fabric-api(required){modrinth:P7dR8mSH}
