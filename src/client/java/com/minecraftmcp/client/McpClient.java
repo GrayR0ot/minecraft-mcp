@@ -5,6 +5,8 @@ import com.minecraftmcp.client.command.RemoteCommandService;
 import com.minecraftmcp.client.command.RemoteInspectionService;
 import com.minecraftmcp.client.input.InputService;
 import com.minecraftmcp.client.screenshot.ScreenshotService;
+import com.minecraftmcp.client.container.ContainerService;
+import com.minecraftmcp.client.tools.ClientContainerTool;
 import com.minecraftmcp.client.tools.ClientInputTool;
 import com.minecraftmcp.client.tools.ClientStateTool;
 import com.minecraftmcp.client.tools.ClientWorldTool;
@@ -51,6 +53,7 @@ public final class McpClient implements ClientModInitializer {
 				new TakeScreenshotTool(new ScreenshotService(client), config.client.screenshotMaxWidth),
 				new ClientStateTool(new ClientStateService(client, chat)),
 				new ClientInputTool(input),
+				new ClientContainerTool(new ContainerService(client)),
 				new ListCommandsTool(new CommandCatalogService(client)),
 				new ClientWorldTool(new WorldSessionService(client, runtime.serverAccess()))));
 

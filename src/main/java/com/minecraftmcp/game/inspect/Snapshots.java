@@ -41,9 +41,12 @@ public final class Snapshots {
 	 *
 	 * @param item       summary (name, lore, enchantments, durability)
 	 * @param tooltip    the tooltip lines as the player sees them (advanced tooltips on: ids, durability)
+	 * @param tooltipFormatted the same lines with colors and styles as &-codes (&c red, &l bold, &o italic, &#RRGGBB hex)
+	 * @param loreFormatted    the lore lines as set on the item, with &-codes (before the default italic purple is applied)
 	 * @param components the whole stack serialized as JSON, with every data component
 	 */
-	public record ItemDetails(ItemInfo item, List<String> tooltip, JsonElement components) {
+	public record ItemDetails(ItemInfo item, List<String> tooltip, List<String> tooltipFormatted,
+							   List<String> loreFormatted, JsonElement components) {
 	}
 
 	public record EffectInfo(String effect, int amplifier, int durationTicks) {

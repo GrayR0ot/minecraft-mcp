@@ -23,6 +23,7 @@ Developing a Minecraft server means a lot of repetitive in-game work: running co
 | `take_screenshot` | PNG of what the player sees |
 | `client_state` | Open screen, crosshair target, received chat |
 | `client_input` | Look, hotbar, use, attack, hold keys, respawn, chat |
+| `client_container` | Open the inventory, list slots, hover a slot (the tooltip shows in screenshots), click slots; works with plugin menus |
 | `list_commands` | Commands the server allows you, with syntax; detects WorldEdit |
 | `client_world` | List, create, open and leave singleplayer worlds; join a multiplayer server |
 

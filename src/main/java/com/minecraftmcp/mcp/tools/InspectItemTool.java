@@ -14,7 +14,8 @@ public final class InspectItemTool implements McpTool {
 			"inspect_item",
 			"Inspect item",
 			"Returns everything about one item stack of a player: name, lore, enchantments, durability, the "
-					+ "tooltip lines as the player sees them (advanced tooltips on), and the whole stack serialized "
+					+ "tooltip lines as the player sees them (advanced tooltips on), the same lines with colors and styles "
+					+ "as &-codes (tooltipFormatted, loreFormatted), and the whole stack serialized "
 					+ "with every data component (custom data, attribute modifiers, custom model data...).",
 			Schema.object()
 					.string("player", "Player name. Defaults to the first online player.", false)

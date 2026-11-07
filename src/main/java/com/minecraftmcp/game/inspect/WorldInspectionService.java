@@ -176,7 +176,12 @@ public final class WorldInspectionService {
 		var components = ItemStack.CODEC.encodeStart(ops, stack)
 				.resultOrPartial(error -> { throw new GameStateException("Could not serialize the item: " + error); })
 				.orElseThrow();
-		return new ItemDetails(item(index, stack), tooltip, components);
+		List<Component> tooltipComponents = stack.getTooltipLines(Item.TooltipContext.of(player.level()), player, TooltipFlag.ADVANCED);
+		ItemLore lore = stack.get(DataComponents.LORE);
+		return new ItemDetails(item(index, stack), tooltip,
+				tooltipComponents.stream().map(TextFormat::withCodes).toList(),
+				lore == null ? List.of() : lore.lines().stream().map(TextFormat::withCodes).toList(),
+				components);
 	}
 
 	/** Detailed view of an entity found by UUID or numeric network id, in any dimension. */
@@ -287,7 +292,7 @@ public final class WorldInspectionService {
 				.toList();
 	}
 
-	private static ItemInfo item(int slot, ItemStack stack) {
+	public static ItemInfo item(int slot, ItemStack stack) {
 		return item(slot, stack, null);
 	}
 

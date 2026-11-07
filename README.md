@@ -23,6 +23,7 @@ If WorldEdit is installed on the server, its commands are usable through `run_co
 | `take_screenshot` | client | PNG of what the player sees |
 | `client_state` | client | Open screen, crosshair target, received chat |
 | `client_input` | client | Look, hotbar slot, use, attack, hold a key for N ticks (bow, eating, walking), respawn, close screen, chat |
+| `client_container` | client | Open the inventory, list slots, hover a slot (the tooltip shows in `take_screenshot`), click slots; works with chests and plugin menus |
 | `list_commands` | client | Commands the connected server allows this player, with syntax (WorldEdit detected automatically) |
 | `client_world` | client | List, create, open and leave singleplayer worlds; join a multiplayer server |
 

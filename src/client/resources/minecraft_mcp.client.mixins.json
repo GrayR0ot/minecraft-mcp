@@ -3,7 +3,9 @@
 	"package": "com.minecraftmcp.mixin.client",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
-		"MinecraftInvoker"
+		"AbstractContainerScreenAccessor",
+		"MinecraftInvoker",
+		"MouseHandlerAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1
