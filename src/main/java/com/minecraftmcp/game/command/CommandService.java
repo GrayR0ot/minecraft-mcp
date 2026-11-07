@@ -25,6 +25,7 @@ public final class CommandService {
 
 	private final ServerAccess serverAccess;
 	private final CommandPolicy policy;
+	private volatile RemoteCommandExecutor remote;
 
 	public CommandService(ServerAccess serverAccess, CommandPolicy policy) {
 		this.serverAccess = serverAccess;
@@ -40,8 +41,10 @@ public final class CommandService {
 	 *                 (typically a parse error)
 	 * @param result   vanilla result value (e.g. number of affected entities)
 	 * @param output   chat lines the command sent to its source
+	 * @param note     set when the result is incomplete (remote server: success and result are not reported)
 	 */
-	public record CommandOutcome(String command, String executor, Boolean success, int result, List<String> output) {
+	public record CommandOutcome(String command, String executor, Boolean success, int result, List<String> output,
+								 String note) {
 	}
 
 	/**
@@ -49,6 +52,13 @@ public final class CommandService {
 	 * online player (to make {@code @s} and relative coordinates refer to that player).
 	 */
 	public CommandOutcome execute(String rawCommand, Optional<String> asPlayer) {
+		RemoteCommandExecutor remoteExecutor = remote;
+		if (serverAccess.current().isEmpty() && remoteExecutor != null) {
+			if (asPlayer.isPresent()) {
+				throw new CommandRejectedException("as_player is not available on a remote server: the command runs as your own player.");
+			}
+			return remoteExecutor.execute(rawCommand);
+		}
 		String command = policy.prepare(rawCommand);
 		return serverAccess.call(server -> {
 			OutputCollector output = new OutputCollector();
@@ -71,8 +81,13 @@ public final class CommandService {
 
 			LOGGER.info("[MCP] /{} (as {})", command, executor);
 			server.getCommands().performCommand(parse, command);
-			return new CommandOutcome(command, executor, holder.success, holder.value, output.lines());
+			return new CommandOutcome(command, executor, holder.success, holder.value, output.lines(), null);
 		});
+	}
+
+	/** Installs the executor used when joined to a remote server (client side). */
+	public void setRemoteExecutor(RemoteCommandExecutor executor) {
+		this.remote = executor;
 	}
 
 	public CommandPolicy policy() {

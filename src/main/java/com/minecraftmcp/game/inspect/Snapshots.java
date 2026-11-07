@@ -71,7 +71,7 @@ public final class Snapshots {
 	}
 
 	/** Global state of the server. */
-	public record ServerInfo(String minecraftVersion, boolean dedicated, long tickCount, double mspt,
+	public record ServerInfo(String minecraftVersion, boolean dedicated, long tickCount, Double mspt,
 							 float targetTps, boolean tickFrozen, List<String> dimensions,
 							 List<String> players, long dayTime) {
 	}

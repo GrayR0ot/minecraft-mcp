@@ -83,6 +83,22 @@ public final class CommandPolicy {
 		return roots;
 	}
 
+	/**
+	 * Textual safety net for {@code execute ... run <command>} when the command could not be fully
+	 * parsed (e.g. arguments of a plugin command): refuses it if any word after "run" is a denied root.
+	 */
+	public void checkExecuteRuns(String command) {
+		String[] words = command.strip().split("\\s+");
+		if (words.length == 0 || !normalizeRoot(words[0]).equals("execute")) {
+			return;
+		}
+		for (int i = 1; i < words.length - 1; i++) {
+			if (words[i].equals("run")) {
+				checkRoot(words[i + 1]);
+			}
+		}
+	}
+
 	public boolean isRestricted() {
 		return restricted;
 	}

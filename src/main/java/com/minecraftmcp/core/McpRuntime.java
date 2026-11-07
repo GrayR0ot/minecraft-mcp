@@ -2,6 +2,8 @@ package com.minecraftmcp.core;
 
 import com.minecraftmcp.core.config.McpConfig;
 import com.minecraftmcp.game.ServerAccess;
+import com.minecraftmcp.game.command.CommandService;
+import com.minecraftmcp.game.inspect.WorldInspectionService;
 import com.minecraftmcp.mcp.tool.ToolRegistry;
 import com.minecraftmcp.mcp.transport.McpHttpServer;
 import org.slf4j.Logger;
@@ -25,12 +27,18 @@ public final class McpRuntime {
 	private final McpConfig config;
 	private final ToolRegistry tools;
 	private final ServerAccess serverAccess;
+	private final CommandService commands;
+	private final WorldInspectionService inspection;
 	private final McpHttpServer httpServer;
 
-	McpRuntime(McpConfig config, ToolRegistry tools, ServerAccess serverAccess, McpHttpServer httpServer) {
+	McpRuntime(McpConfig config, ToolRegistry tools, ServerAccess serverAccess, CommandService commands,
+			   WorldInspectionService inspection,
+			   McpHttpServer httpServer) {
 		this.config = config;
 		this.tools = tools;
 		this.serverAccess = serverAccess;
+		this.commands = commands;
+		this.inspection = inspection;
 		this.httpServer = httpServer;
 	}
 
@@ -41,6 +49,16 @@ public final class McpRuntime {
 	/** Registry of MCP tools; add-ons may register their own tools here. */
 	public ToolRegistry tools() {
 		return tools;
+	}
+
+	/** World inspection service; the client side plugs in remote-server support here. */
+	public WorldInspectionService inspection() {
+		return inspection;
+	}
+
+	/** Command execution service; the client side plugs in remote-server support here. */
+	public CommandService commands() {
+		return commands;
 	}
 
 	public ServerAccess serverAccess() {

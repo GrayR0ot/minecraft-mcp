@@ -18,7 +18,8 @@ public final class RunCommandTool implements McpTool {
 					+ "every line it printed. By default runs as the server console; set 'as_player' to run as a "
 					+ "player so that @s, ~ ~ ~ and ^ ^ ^ refer to them. Examples: 'give @p diamond_sword', "
 					+ "'summon zombie ~ ~ ~5', 'data get entity @p', 'tick freeze'. Some commands (stop, op, "
-					+ "ban...) are blocked by the safety policy.",
+					+ "ban...) are blocked by the safety policy. When joined to a remote server, the command is sent through the chat as "
+					+ "your own player (with your permissions): 'success' may then be null, read 'output' and 'note'.",
 			Schema.object()
 					.string("command", "Command, with or without the leading slash. Single line.", true)
 					.string("as_player", "Optional name of an online player to execute as.", false)
@@ -41,7 +42,7 @@ public final class RunCommandTool implements McpTool {
 		CommandOutcome outcome = commands.execute(args.requireString("command"), args.optString("as_player"));
 		ToolResult result = ToolResult.json(outcome);
 		// A command that never reported success (parse error, unknown command) is a failure too.
-		boolean failed = !Boolean.TRUE.equals(outcome.success());
+		boolean failed = Boolean.FALSE.equals(outcome.success()) || (outcome.success() == null && outcome.note() == null);
 		return failed ? new ToolResult(result.content(), true) : result;
 	}
 }

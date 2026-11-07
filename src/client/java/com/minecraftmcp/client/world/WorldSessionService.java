@@ -4,8 +4,11 @@ import com.minecraftmcp.client.ClientAccess;
 import com.minecraftmcp.game.GameStateException;
 import com.minecraftmcp.game.ServerAccess;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
@@ -114,6 +117,27 @@ public final class WorldSessionService {
 		}
 		client.post(minecraft -> minecraft.createWorldOpenFlows().openWorld(worldId, () -> minecraft.gui.setScreen(new TitleScreen())));
 		return wait ? awaitInWorld(worldId) : new SessionState(false, worldId, "World loading started.");
+	}
+
+	/**
+	 * Joins a multiplayer server by address (e.g. {@code play.example.com} or {@code localhost:25570}).
+	 * The server-side tools do not apply to a remote server; use run_command (sent through the chat),
+	 * list_commands and the client tools.
+	 */
+	public SessionState join(String address, boolean wait) {
+		requireNoWorld();
+		if (!ServerAddress.isValidAddress(address)) {
+			throw new GameStateException("'" + address + "' is not a valid server address (expected host or host:port).");
+		}
+		ServerAddress parsed = ServerAddress.parseString(address);
+		client.post(minecraft -> ConnectScreen.startConnecting(new TitleScreen(), minecraft, parsed,
+				new ServerData("Minecraft MCP", address, ServerData.Type.OTHER), false, null));
+		if (!wait) {
+			return new SessionState(false, address, "Connection started.");
+		}
+		Minecraft minecraft = Minecraft.getInstance();
+		waitUntil(() -> minecraft.player != null && minecraft.level != null, "joining " + address);
+		return new SessionState(true, address, "Joined the server.");
 	}
 
 	/** Saves and leaves the current world, back to the title screen. */

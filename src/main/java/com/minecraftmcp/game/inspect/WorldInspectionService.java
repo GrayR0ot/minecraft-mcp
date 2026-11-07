@@ -14,6 +14,7 @@ import com.minecraftmcp.game.inspect.Snapshots.ServerInfo;
 import com.minecraftmcp.game.inspect.Snapshots.Vec;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -25,6 +26,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -51,12 +53,26 @@ public final class WorldInspectionService {
 	public static final int MAX_RADIUS = 256;
 
 	private final ServerAccess serverAccess;
+	private volatile RemoteInspector remote;
 
 	public WorldInspectionService(ServerAccess serverAccess) {
 		this.serverAccess = serverAccess;
 	}
 
+	/** Installs the inspector used when joined to a remote server (client side). */
+	public void setRemoteInspector(RemoteInspector inspector) {
+		this.remote = inspector;
+	}
+
+	private RemoteInspector remoteIfNoServer() {
+		return serverAccess.current().isEmpty() ? remote : null;
+	}
+
 	public ServerInfo serverInfo() {
+		RemoteInspector remoteInspector = remoteIfNoServer();
+		if (remoteInspector != null) {
+			return remoteInspector.serverInfo();
+		}
 		return serverAccess.call(server -> {
 			List<String> dimensions = new ArrayList<>();
 			server.getAllLevels().forEach(level -> dimensions.add(level.dimension().identifier().toString()));
@@ -75,7 +91,14 @@ public final class WorldInspectionService {
 	}
 
 	public PlayerInfo player(Optional<String> name) {
-		return serverAccess.call(server -> describePlayer(ServerAccess.resolvePlayer(server, name)));
+		RemoteInspector remoteInspector = remoteIfNoServer();
+		if (remoteInspector != null) {
+			return remoteInspector.player(name);
+		}
+		return serverAccess.call(server -> {
+			ServerPlayer player = ServerAccess.resolvePlayer(server, name);
+			return describePlayer(player, player.gameMode.getGameModeForPlayer().getName());
+		});
 	}
 
 	/**
@@ -125,25 +148,35 @@ public final class WorldInspectionService {
 	 *                   selected hotbar slot if empty
 	 */
 	public ItemDetails itemDetails(Optional<String> playerName, java.util.OptionalInt slot) {
-		return serverAccess.call(server -> {
-			ServerPlayer player = ServerAccess.resolvePlayer(server, playerName);
-			Inventory inventory = player.getInventory();
-			int index = slot.orElse(inventory.getSelectedSlot());
-			if (index < 0 || index >= inventory.getContainerSize()) {
-				throw new GameStateException("Slot " + index + " is out of range (0-" + (inventory.getContainerSize() - 1) + ").");
-			}
-			ItemStack stack = inventory.getItem(index);
-			if (stack.isEmpty()) {
-				throw new GameStateException("Slot " + index + " of " + player.getName().getString() + " is empty.");
-			}
-			List<String> tooltip = stack.getTooltipLines(Item.TooltipContext.of(player.level()), player, TooltipFlag.ADVANCED)
-					.stream().map(Component::getString).toList();
-			var ops = server.registryAccess().createSerializationContext(JsonOps.INSTANCE);
-			var components = ItemStack.CODEC.encodeStart(ops, stack)
-					.resultOrPartial(error -> { throw new GameStateException("Could not serialize the item: " + error); })
-					.orElseThrow();
-			return new ItemDetails(item(index, stack), tooltip, components);
-		});
+		RemoteInspector remoteInspector = remoteIfNoServer();
+		if (remoteInspector != null) {
+			return remoteInspector.itemDetails(playerName, slot);
+		}
+		return serverAccess.call(server -> describeItem(ServerAccess.resolvePlayer(server, playerName), slot, server.registryAccess()));
+	}
+
+	/**
+	 * Describes one stack of a player's inventory (server or local client player).
+	 *
+	 * @param registries registry access used to serialize the item
+	 */
+	public static ItemDetails describeItem(Player player, java.util.OptionalInt slot, HolderLookup.Provider registries) {
+		Inventory inventory = player.getInventory();
+		int index = slot.orElse(inventory.getSelectedSlot());
+		if (index < 0 || index >= inventory.getContainerSize()) {
+			throw new GameStateException("Slot " + index + " is out of range (0-" + (inventory.getContainerSize() - 1) + ").");
+		}
+		ItemStack stack = inventory.getItem(index);
+		if (stack.isEmpty()) {
+			throw new GameStateException("Slot " + index + " of " + player.getName().getString() + " is empty.");
+		}
+		List<String> tooltip = stack.getTooltipLines(Item.TooltipContext.of(player.level()), player, TooltipFlag.ADVANCED)
+				.stream().map(Component::getString).toList();
+		var ops = registries.createSerializationContext(JsonOps.INSTANCE);
+		var components = ItemStack.CODEC.encodeStart(ops, stack)
+				.resultOrPartial(error -> { throw new GameStateException("Could not serialize the item: " + error); })
+				.orElseThrow();
+		return new ItemDetails(item(index, stack), tooltip, components);
 	}
 
 	/** Detailed view of an entity found by UUID or numeric network id, in any dimension. */
@@ -174,7 +207,8 @@ public final class WorldInspectionService {
 		return null;
 	}
 
-	private static PlayerInfo describePlayer(ServerPlayer player) {
+	/** Description of a player (server or local client player); {@code gameMode} is the display name. */
+	public static PlayerInfo describePlayer(Player player, String gameMode) {
 		Inventory inventory = player.getInventory();
 		List<ItemInfo> items = new ArrayList<>();
 		for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
@@ -189,7 +223,7 @@ public final class WorldInspectionService {
 				player.level().dimension().identifier().toString(),
 				vec(player.position()),
 				new Rotation(player.getYRot(), player.getXRot()),
-				player.gameMode.getGameModeForPlayer().getName(),
+				gameMode,
 				player.getHealth(),
 				player.getMaxHealth(),
 				player.getFoodData().getFoodLevel(),

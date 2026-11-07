@@ -85,7 +85,7 @@ public final class McpMod implements ModInitializer {
 				new McpServerInfo("minecraft-mcp", "Minecraft MCP", version, INSTRUCTIONS));
 		McpHttpServer httpServer = new McpHttpServer(handler, config.server.host, config.server.port, config.server.authToken);
 
-		runtime = new McpRuntime(config, tools, serverAccess, httpServer);
+		runtime = new McpRuntime(config, tools, serverAccess, commands, inspection, httpServer);
 		McpCommand.register(runtime);
 
 		if (loader.getEnvironmentType() == EnvType.SERVER) {

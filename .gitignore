@@ -44,3 +44,4 @@ logs/
 
 # claude code local settings
 .claude/settings.local.json
+run-server/

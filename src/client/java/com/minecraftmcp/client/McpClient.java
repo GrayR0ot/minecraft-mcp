@@ -1,6 +1,8 @@
 package com.minecraftmcp.client;
 
 import com.minecraftmcp.client.chat.ChatCapture;
+import com.minecraftmcp.client.command.RemoteCommandService;
+import com.minecraftmcp.client.command.RemoteInspectionService;
 import com.minecraftmcp.client.input.InputService;
 import com.minecraftmcp.client.screenshot.ScreenshotService;
 import com.minecraftmcp.client.tools.ClientInputTool;
@@ -38,7 +40,11 @@ public final class McpClient implements ClientModInitializer {
 		ChatCapture chat = new ChatCapture(config.client.chatBufferSize);
 		chat.registerEvents();
 
-		InputService input = new InputService(client);
+		RemoteCommandService remoteCommands = new RemoteCommandService(client, chat, runtime.commands().policy());
+		runtime.commands().setRemoteExecutor(remoteCommands);
+		runtime.inspection().setRemoteInspector(new RemoteInspectionService(client));
+
+		InputService input = new InputService(client, remoteCommands::guard);
 		input.registerEvents();
 
 		runtime.tools().registerAll(List.of(

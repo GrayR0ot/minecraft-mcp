@@ -21,6 +21,10 @@ loom {
 			// Stable name so the AI always finds the same player in logs and commands.
 			programArgs "--username", "McpTester"
 		}
+		server {
+			// Separate folder so a local test server never shares files with the dev client.
+			runDir "run-server"
+		}
 	}
 }
 

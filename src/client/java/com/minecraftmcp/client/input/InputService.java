@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.player.LocalPlayer;
 
+import java.util.function.UnaryOperator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -24,9 +25,14 @@ import net.minecraft.world.phys.HitResult;
 public final class InputService {
 
 	private final ClientAccess client;
+	private final UnaryOperator<String> commandGuard;
 
-	public InputService(ClientAccess client) {
+	/**
+	 * @param commandGuard applies the command policy to a command typed through the chat; throws if refused
+	 */
+	public InputService(ClientAccess client, UnaryOperator<String> commandGuard) {
 		this.client = client;
+		this.commandGuard = commandGuard;
 	}
 
 	/** Supported actions. */
@@ -193,13 +199,13 @@ public final class InputService {
 		return "Selected hotbar slot " + slot + ".";
 	}
 
-	private static String chat(LocalPlayer player, String text) {
+	private String chat(LocalPlayer player, String text) {
 		if (text == null || text.isBlank()) {
 			throw new GameStateException("Action 'chat' needs a non-empty 'text'.");
 		}
 		String message = text.strip();
 		if (message.startsWith("/")) {
-			player.connection.sendCommand(message.substring(1));
+			player.connection.sendCommand(commandGuard.apply(message));
 			return "Command sent as the player: " + message;
 		}
 		player.connection.sendChat(message);

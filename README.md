@@ -24,9 +24,22 @@ If WorldEdit is installed on the server, its commands are usable through `run_co
 | `client_state` | client | Open screen, crosshair target, received chat |
 | `client_input` | client | Look, hotbar slot, use, attack, hold a key for N ticks (bow, eating, walking), respawn, close screen, chat |
 | `list_commands` | client | Commands the connected server allows this player, with syntax (WorldEdit detected automatically) |
-| `client_world` | client | List, create, open and leave singleplayer worlds |
+| `client_world` | client | List, create, open and leave singleplayer worlds; join a multiplayer server |
 
 Also: an in-game `/mcp status` command, and an in-game config screen (Mod Menu + Cloth Config, both optional).
+
+
+## Remote servers
+
+The mod runs on your client, so it works in singleplayer **and** on a remote server you join (ideally as an operator). Use `client_world` with `action=join` and an `address` to connect.
+
+On a remote server:
+
+- `run_command` sends the command through the chat as your own player (with your permissions) and returns the server's answer. `success` is not reported by the server, so it is inferred from red error messages; read `output`.
+- `list_commands` lists the commands the server allows you, from the command tree it sent at join time (plugin and WorldEdit commands included).
+- `server_status`, `get_player` and `inspect_item` describe what the server synchronizes to your client (your own player, loaded dimensions, the player list). MSPT is not available.
+- `list_entities`, `inspect_entity`, `read_combat_log` and `as_player` are not available remotely yet.
+- The command deny list still applies (also to the chat in `client_input`), including behind `/execute ... run`.
 
 ## Requirements
 

@@ -55,4 +55,13 @@ class CommandPolicyTest {
 		assertDoesNotThrow(() -> restricted.check(dispatcher.parse("execute run say", new Object())));
 		assertEquals("execute", execute.getLiteral());
 	}
+
+	@Test
+	void textualExecuteGuardCatchesDeniedRootAfterRun() {
+		assertThrows(CommandRejectedException.class, () -> restricted.checkExecuteRuns("execute as @a at @s run stop"));
+		assertThrows(CommandRejectedException.class, () -> restricted.checkExecuteRuns("execute run minecraft:op Steve"));
+		assertDoesNotThrow(() -> restricted.checkExecuteRuns("execute as @a run say hi"));
+		// Only /execute is inspected: other commands may legitimately contain the word "run".
+		assertDoesNotThrow(() -> restricted.checkExecuteRuns("say run stop"));
+	}
 }

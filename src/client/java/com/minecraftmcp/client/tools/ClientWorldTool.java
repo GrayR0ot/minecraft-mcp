@@ -12,11 +12,11 @@ import net.minecraft.world.level.GameType;
 
 import java.util.OptionalLong;
 
-/** Lists, creates, opens and leaves singleplayer worlds. */
+/** Lists, creates, opens and leaves singleplayer worlds, and joins multiplayer servers. */
 public final class ClientWorldTool implements McpTool {
 
 	/** Actions of this tool. */
-	public enum WorldAction { LIST, CREATE, OPEN, LEAVE }
+	public enum WorldAction { LIST, CREATE, OPEN, JOIN, LEAVE }
 
 	/** Game modes accepted on creation. */
 	public enum Mode { CREATIVE, SURVIVAL, ADVENTURE, SPECTATOR }
@@ -24,9 +24,10 @@ public final class ClientWorldTool implements McpTool {
 	private static final ToolDescriptor DESCRIPTOR = new ToolDescriptor(
 			"client_world",
 			"Client world",
-			"Manages singleplayer worlds. 'list' shows saved worlds (id, name, last played). 'create' makes and "
+			"Manages worlds and connections. 'list' shows saved worlds (id, name, last played). 'create' makes and "
 					+ "joins a new world (cheats on; preset 'flat' is fastest for tests). 'open' joins a saved world "
-					+ "by id. 'leave' saves and returns to the title screen. create/open/leave wait until done "
+					+ "by id. 'join' connects to a multiplayer server by 'address' (the server-side tools then do "
+						+ "not apply: use run_command, list_commands and the client tools). 'leave' saves and returns to the title screen. create/open/join/leave wait until done "
 					+ "(up to " + WorldSessionService.WORLD_TIMEOUT.toSeconds() + " s) unless wait=false.",
 			Schema.object()
 					.enumeration("action", WorldAction.class, "What to do.", true)
@@ -34,6 +35,7 @@ public final class ClientWorldTool implements McpTool {
 					.enumeration("preset", Preset.class, "For 'create': terrain. Default flat.", false)
 					.enumeration("game_mode", Mode.class, "For 'create': game mode. Default creative.", false)
 					.string("seed", "For 'create': numeric seed. Random if absent.", false)
+					.string("address", "For 'join': server address, host or host:port.", false)
 					.bool("wait", "Wait for the operation to finish. Default true.", false)
 					.build(),
 			false, false);
@@ -63,6 +65,7 @@ public final class ClientWorldTool implements McpTool {
 					parseSeed(args),
 					wait));
 			case OPEN -> ToolResult.json(worlds.open(args.requireString("name"), wait));
+			case JOIN -> ToolResult.json(worlds.join(args.requireString("address"), wait));
 			case LEAVE -> ToolResult.json(worlds.leave(wait));
 		};
 	}

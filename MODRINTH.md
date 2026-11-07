@@ -24,11 +24,15 @@ Developing a Minecraft server means a lot of repetitive in-game work: running co
 | `client_state` | Open screen, crosshair target, received chat |
 | `client_input` | Look, hotbar, use, attack, hold keys, respawn, chat |
 | `list_commands` | Commands the server allows you, with syntax; detects WorldEdit |
-| `client_world` | List, create, open and leave singleplayer worlds |
+| `client_world` | List, create, open and leave singleplayer worlds; join a multiplayer server |
 
 Also includes an in-game `/mcp status` command, and a config screen if Mod Menu and Cloth Config are installed (both optional).
 
 **WorldEdit (optional):** if WorldEdit is installed on the server, its commands can be run through `run_command`.
+
+## Remote servers
+
+Join any server (ideally as an operator) with `client_world` (`action=join`). `run_command` is then sent through the chat as your player with the server's answer returned, `list_commands` shows what you may run (WorldEdit included), and `server_status`, `get_player` and `inspect_item` work from your client's view. The command deny list still applies.
 
 ## Quick start
 
