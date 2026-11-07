@@ -119,19 +119,36 @@ public final class WorldSessionService {
 		return wait ? awaitInWorld(worldId) : new SessionState(false, worldId, "World loading started.");
 	}
 
+	/** What to do when the server offers a resource pack. */
+	public enum ResourcePack {
+		/** Accept and download it automatically (default: you want to see the server as players do). */
+		ACCEPT,
+		/** Refuse it silently. A server that requires its pack may then refuse the connection. */
+		DECLINE,
+		/** Show vanilla's confirmation screen (the AI cannot answer it: it has no cursor over buttons). */
+		PROMPT
+	}
+
 	/**
 	 * Joins a multiplayer server by address (e.g. {@code play.example.com} or {@code localhost:25570}).
 	 * The server-side tools do not apply to a remote server; use run_command (sent through the chat),
 	 * list_commands and the client tools.
+	 *
+	 * @param resourcePack how to answer the server's resource pack offer, if any
 	 */
-	public SessionState join(String address, boolean wait) {
+	public SessionState join(String address, boolean wait, ResourcePack resourcePack) {
 		requireNoWorld();
 		if (!ServerAddress.isValidAddress(address)) {
 			throw new GameStateException("'" + address + "' is not a valid server address (expected host or host:port).");
 		}
 		ServerAddress parsed = ServerAddress.parseString(address);
-		client.post(minecraft -> ConnectScreen.startConnecting(new TitleScreen(), minecraft, parsed,
-				new ServerData("Minecraft MCP", address, ServerData.Type.OTHER), false, null));
+		ServerData serverData = new ServerData("Minecraft MCP", address, ServerData.Type.OTHER);
+		serverData.setResourcePackStatus(switch (resourcePack) {
+			case ACCEPT -> ServerData.ServerPackStatus.ENABLED;
+			case DECLINE -> ServerData.ServerPackStatus.DISABLED;
+			case PROMPT -> ServerData.ServerPackStatus.PROMPT;
+		});
+		client.post(minecraft -> ConnectScreen.startConnecting(new TitleScreen(), minecraft, parsed, serverData, false, null));
 		if (!wait) {
 			return new SessionState(false, address, "Connection started.");
 		}

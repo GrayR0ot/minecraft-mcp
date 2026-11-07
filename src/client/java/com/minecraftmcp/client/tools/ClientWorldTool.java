@@ -36,6 +36,9 @@ public final class ClientWorldTool implements McpTool {
 					.enumeration("game_mode", Mode.class, "For 'create': game mode. Default creative.", false)
 					.string("seed", "For 'create': numeric seed. Random if absent.", false)
 					.string("address", "For 'join': server address, host or host:port.", false)
+					.enumeration("resource_pack", WorldSessionService.ResourcePack.class,
+							"For 'join': how to answer the server's resource pack offer. Default accept. 'prompt' shows vanilla's "
+							+ "confirmation screen, which you cannot answer.", false)
 					.bool("wait", "Wait for the operation to finish. Default true.", false)
 					.build(),
 			false, false);
@@ -65,7 +68,8 @@ public final class ClientWorldTool implements McpTool {
 					parseSeed(args),
 					wait));
 			case OPEN -> ToolResult.json(worlds.open(args.requireString("name"), wait));
-			case JOIN -> ToolResult.json(worlds.join(args.requireString("address"), wait));
+			case JOIN -> ToolResult.json(worlds.join(args.requireString("address"), wait,
+					args.optEnum("resource_pack", WorldSessionService.ResourcePack.class).orElse(WorldSessionService.ResourcePack.ACCEPT)));
 			case LEAVE -> ToolResult.json(worlds.leave(wait));
 		};
 	}

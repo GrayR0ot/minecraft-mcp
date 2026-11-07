@@ -34,6 +34,8 @@ Also: an in-game `/mcp status` command, and an in-game config screen (Mod Menu +
 
 The mod runs on your client, so it works in singleplayer **and** on a remote server you join (ideally as an operator). Use `client_world` with `action=join` and an `address` to connect.
 
+Use `client_world` with `action=join`, an `address` and optionally `resource_pack` (`accept` by default, `decline`, or `prompt` for the vanilla confirmation screen, which the agent cannot answer).
+
 On a remote server:
 
 - `run_command` sends the command through the chat as your own player (with your permissions) and returns the server's answer. `success` is not reported by the server, so it is inferred from red error messages; read `output`.

@@ -33,7 +33,7 @@ Also includes an in-game `/mcp status` command, and a config screen if Mod Menu 
 
 ## Remote servers
 
-Join any server (ideally as an operator) with `client_world` (`action=join`). `run_command` is then sent through the chat as your player with the server's answer returned, `list_commands` shows what you may run (WorldEdit included), and `server_status`, `get_player` and `inspect_item` work from your client's view. The command deny list still applies.
+Join any server (ideally as an operator) with `client_world` (`action=join`, `address`, and `resource_pack` = `accept` (default), `decline` or `prompt` to answer the server's resource pack offer). `run_command` is then sent through the chat as your player with the server's answer returned, `list_commands` shows what you may run (WorldEdit included), and `server_status`, `get_player` and `inspect_item` work from your client's view. The command deny list still applies.
 
 ## Quick start
 
